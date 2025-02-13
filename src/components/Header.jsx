@@ -1,38 +1,32 @@
-import { use, useRef } from "react";
+import { use } from "react";
 import headerImg from "../assets/logo.jpg";
-import { CartContext } from "../store/CartContext";
 import Button from "./Button";
-import Modal from "./Modal";
-import Cart from "./Cart";
+import { CartContext } from "../store/CartContext";
+import { UserProgressContext } from "../store/UserProgressContext";
 
 export default function Header() {
   const { cart } = use(CartContext);
-  const modal = useRef();
+  const { showCart } = use(UserProgressContext);
 
   function handleOpenCart() {
-    modal.current.showModal();
+    showCart();
   }
 
   return (
-    <>
-      <Modal ref={modal}>
-        <Cart />
-      </Modal>
-      <header id="main-header">
-        <div id="title">
-          <img
-            src={headerImg}
-            alt="Dish in front of city"
-          />
-          <h1>Reactfood</h1>
-        </div>
-        <Button
-          textOnly
-          onClick={handleOpenCart}
-        >
-          Cart ({cart.items.length})
-        </Button>
-      </header>
-    </>
+    <header id="main-header">
+      <div id="title">
+        <img
+          src={headerImg}
+          alt="Dish in front of city"
+        />
+        <h1>Reactfood</h1>
+      </div>
+      <Button
+        onClick={handleOpenCart}
+        textOnly
+      >
+        Cart ({cart.items.length})
+      </Button>
+    </header>
   );
 }

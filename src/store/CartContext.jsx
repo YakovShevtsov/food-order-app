@@ -1,10 +1,10 @@
 import { createContext, useEffect, useReducer, useState } from "react";
 
-export const CartContext = createContext(() => ({
+export const CartContext = createContext({
   addItem: (item) => {},
   removeItem: (id) => {},
   items: [],
-}));
+});
 
 function cartReducer(state, action) {
   if (action.type === "ADD_ITEM") {

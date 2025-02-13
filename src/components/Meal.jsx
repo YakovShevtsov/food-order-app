@@ -1,6 +1,7 @@
 import { CartContext } from "../store/CartContext";
 import { use } from "react";
 import Button from "./Button";
+import formatCurrency from "../utils/currencyFormatter";
 
 export default function Meal({ mealData }) {
   const { addItem } = use(CartContext);
@@ -14,7 +15,7 @@ export default function Meal({ mealData }) {
         />
         <div>
           <h3>{mealData.name}</h3>
-          <p className="meal-item-price">{mealData.price}</p>
+          <p className="meal-item-price">{formatCurrency(mealData.price)}</p>
           <p className="meal-item-description">{mealData.description}</p>
         </div>
         <p className="meal-item-actions">
