@@ -8,7 +8,7 @@ import formatCurrency from "../utils/currencyFormatter.js";
 
 export default function Cart() {
   const { cart } = use(CartContext);
-  const { userProgress, hideCart } = use(UserProgressContext);
+  const { userProgress, hideCart, showCheckout } = use(UserProgressContext);
 
   const cartTotal = cart.items.reduce(
     (totalPrice, item) => totalPrice + item.quantity * item.price,
@@ -17,6 +17,10 @@ export default function Cart() {
 
   function handleCloseCart() {
     hideCart();
+  }
+
+  function handleShowCheckout() {
+    showCheckout();
   }
 
   return (
@@ -49,7 +53,9 @@ export default function Cart() {
         >
           Close
         </Button>
-        {cart.items.length > 0 && <Button>Go to checkout</Button>}
+        {cart.items.length > 0 && (
+          <Button onClick={handleShowCheckout}>Go to checkout</Button>
+        )}
       </form>
     </Modal>
   );
