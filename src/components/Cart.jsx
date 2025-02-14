@@ -4,7 +4,7 @@ import Button from "./Button";
 import CartItem from "./CartItem";
 import Modal from "./Modal";
 import { UserProgressContext } from "../store/UserProgressContext";
-import formatCurrency from "../utils/currencyFormatter.js";
+import { formatCurrency } from "../utils";
 
 export default function Cart() {
   const { cart } = use(CartContext);

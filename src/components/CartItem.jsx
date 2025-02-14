@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { CartContext } from "../store/CartContext";
-import formatCurrency from "../utils/currencyFormatter";
+import { formatCurrency } from "../utils";
 
 export default function CartItem({ itemData }) {
   const { addItem, removeItem } = useContext(CartContext);
