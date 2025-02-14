@@ -1,48 +1,36 @@
-import { use, useActionState, useState } from "react";
+import { use, useActionState } from "react";
 import { formatCurrency, isNotEmpty, isEmail } from "../utils";
 import { UserProgressContext } from "../store/UserProgressContext";
 import { CartContext } from "../store/CartContext";
 import Modal from "./Modal";
 import Button from "./Button";
 import Input from "./Input";
+import useHttp from "../hooks/useHttp";
+import Error from "./Error";
+
+const requestConfig = {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
 
 export default function Checkout() {
-  const [formState, formAction, pending] = useActionState(placeOrderAction, {
+  const [formState, formAction, isPending] = useActionState(placeOrderAction, {
     errors: null,
   });
-  const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const { userProgress, hideCheckout } = use(UserProgressContext);
-  const { cart } = use(CartContext);
 
-  async function fetchPlaceOrder(orderData) {
-    try {
-      setIsLoading(true);
-      const response = await fetch("http://localhost:3000/orders", {
-        method: "POST",
-        body: JSON.stringify(orderData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  const {
+    data,
+    error: sendingError,
+    sendRequest,
+    clearData,
+  } = useHttp("http://localhost:3000/orders", requestConfig);
 
-      if (!response.ok) {
-        throw new Error("Failed to submit the order. Please, try again later.");
-      }
+  const userProgressCtx = use(UserProgressContext);
+  const { cart, clearCart } = use(CartContext);
 
-      const resData = await response.json();
-
-      return resData.message;
-    } catch (error) {
-      setError({
-        message: error.message || "An error occured. Please try again later.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function placeOrderAction(prevState, formData) {
+  async function placeOrderAction(prevState, formData) {
     const name = formData.get("fullName");
     const email = formData.get("email");
     const street = formData.get("street");
@@ -71,7 +59,7 @@ export default function Checkout() {
       };
     }
 
-    const order = {
+    const order = JSON.stringify({
       order: {
         items: [...cart.items],
         customer: {
@@ -82,9 +70,9 @@ export default function Checkout() {
           city,
         },
       },
-    };
+    });
 
-    fetchPlaceOrder(order);
+    await sendRequest(order);
     return { errors: null };
   }
 
@@ -94,13 +82,55 @@ export default function Checkout() {
   );
 
   function handleCloseCheckout() {
-    hideCheckout();
+    userProgressCtx.hideCheckout();
+  }
+
+  function handleFinish() {
+    userProgressCtx.hideCheckout();
+    clearCart();
+    clearData();
+  }
+
+  let actions = (
+    <>
+      <Button
+        textOnly
+        onClick={handleCloseCheckout}
+      >
+        Close
+      </Button>
+      <Button>Submit Order</Button>
+    </>
+  );
+
+  if (isPending) {
+    actions = <span>Sending order data...</span>;
+  }
+
+  if (data && !sendingError) {
+    return (
+      <Modal
+        open={userProgressCtx.progress === "checkout"}
+        onClose={handleCloseCheckout}
+      >
+        <h2>Success!</h2>
+        <p>Your order was submitted successfully.</p>
+        <p>
+          We'll get back to you with more details via email within the next few
+          minutes.
+        </p>
+        <p className="modal-actions">
+          <Button onClick={handleFinish}>Okay</Button>
+        </p>
+      </Modal>
+    );
   }
 
   return (
     <Modal
       className="checkout"
-      open={userProgress === "checkout"}
+      open={userProgressCtx.progress === "checkout"}
+      onClose={handleCloseCheckout}
     >
       <h2>Checkout</h2>
       <p>Total amount: {formatCurrency(cartTotal)}</p>
@@ -148,28 +178,22 @@ export default function Checkout() {
             required
           />
         </div>
-        {formState.errors && (
+        {/* {formState.errors && (
           <ul>
             {formState.errors.map((error) => (
               <li key={error}>{error}</li>
             ))}
           </ul>
+        )} */}
+
+        {sendingError && (
+          <Error
+            title="Failed to submit order"
+            message={sendingError}
+          />
         )}
 
-        <p className="modal-actions">
-          <Button
-            textOnly
-            onClick={handleCloseCheckout}
-          >
-            Close
-          </Button>
-          <Button
-            type="submit"
-            disabled={pending}
-          >
-            Submit
-          </Button>
-        </p>
+        <p className="modal-actions">{actions}</p>
       </form>
     </Modal>
   );

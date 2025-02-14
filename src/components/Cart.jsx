@@ -8,7 +8,7 @@ import { formatCurrency } from "../utils";
 
 export default function Cart() {
   const { cart } = use(CartContext);
-  const { userProgress, hideCart, showCheckout } = use(UserProgressContext);
+  const userProgressCtx = use(UserProgressContext);
 
   const cartTotal = cart.items.reduce(
     (totalPrice, item) => totalPrice + item.quantity * item.price,
@@ -16,17 +16,18 @@ export default function Cart() {
   );
 
   function handleCloseCart() {
-    hideCart();
+    userProgressCtx.hideCart();
   }
 
   function handleShowCheckout() {
-    showCheckout();
+    userProgressCtx.showCheckout();
   }
 
   return (
     <Modal
       className="cart"
-      open={userProgress === "cart"}
+      open={userProgressCtx.progress === "cart"}
+      onClose={userProgressCtx.progress === 'cart' ? handleCloseCart : null}
     >
       <h2>Your cart</h2>
       {cart.items.length === 0 && <p>Cart is empty. Please add meals</p>}

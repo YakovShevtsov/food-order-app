@@ -1,6 +1,7 @@
 import { createContext, useState } from "react";
 
 export const UserProgressContext = createContext({
+  progress: '',
   showCart: () => {},
   hideCart: () => {},
   showCheckout: () => {},
@@ -27,11 +28,11 @@ export default function UserProgressContextProvider({ children }) {
   }
 
   const UserProgressCtx = {
+    progress: userProgress,
     showCart: handleShowCart,
     hideCart: handleHideCart,
     showCheckout: handleShowCheckout,
     hideCheckout: handleHideCheckout,
-    userProgress,
   };
 
   return (
